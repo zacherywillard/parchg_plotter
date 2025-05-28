@@ -56,10 +56,10 @@ def parse_parchg(file_path, verbose=False):
 
 def main():
     parser = argparse.ArgumentParser(description="Plot psi^2 vs z from a PARCHG file.")
-    parser.add_argument("-p", "--pos", type=str, default="POSCAR", help="File with defect information output by make_defect.py (e.g., make_out.txt)")
+    parser.add_argument("-p", "--pos", type=str, default="POSCAR", help="Reads position of defect stored in first line of POSCAR file")
     parser.add_argument("-f", "--file", type=str, default="PARCHG", help="Path to PARCHG file")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose mode")
-    parser.add_argument("-o", "--output", type=str, default="psi2_plot.png", help="Filename to save the plot (e.g., plot.png)")
+    parser.add_argument("-o", "--output", type=str, default="psi2_plot.png", help="Filename to save the plot (e.g., psi2_plot.png)")
 
     args = parser.parse_args()
 
