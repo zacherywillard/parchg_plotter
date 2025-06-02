@@ -82,6 +82,8 @@ def main():
     z_defect = frac_z_defect * c_length
     z_vals_shifted = z_vals - z_defect
 
+    psi2_z = psi2_z / np.max(psi2_z)  # Normalize psi^2 values to [0, 1]
+
     if args.verbose:
         print(f"Shifting z-axis to align defect at z = 0.0 Å (z_defect = {z_defect:.4f} Å)")
 
