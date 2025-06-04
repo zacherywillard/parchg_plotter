@@ -56,8 +56,9 @@ def parse_parchg(file_path, verbose=False):
 
 def main():
     parser = argparse.ArgumentParser(description="Plot psi^2 vs z from a PARCHG file.")
-    parser.add_argument("-p", "--pos", type=str, default="POSCAR", help="Reads position of defect stored in first line of POSCAR file")
-    parser.add_argument("-f", "--file", type=str, default="PARCHG", help="Path to PARCHG file")
+    parser.add_argument("-f", "--pos", type=str, default="POSCAR", help="Reads position of defect stored in first line of POSCAR file")
+    parser.add_argument("--pbe", type=str, default="PARCHG", help="Path to PBE PARCHG file")
+    parser.add_argument("--hse", type=str, default="PARCHG", help="Path to HSE PARCHG file")
     parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose mode")
     parser.add_argument("-o", "--output", type=str, default="psi2_plot.png", help="Filename to save the plot (e.g., psi2_plot.png)")
 
@@ -71,27 +72,40 @@ def main():
 
     if args.verbose:
         print(f"Fractional z-position of defect: {frac_z_defect:.6f}")
-        print("Reading PARCHG file:", args.file)
         print("Reading POSCAR file:", args.pos)
         print("Extracted defect position:", defect_position)
 
-    chg_data, c_length = parse_parchg(args.file, verbose=args.verbose)
-    psi2_z = np.mean(np.mean(chg_data, axis=0), axis=0)
-    nz = chg_data.shape[2]
-    z_vals = np.linspace(0, c_length, nz)
-    z_defect = frac_z_defect * c_length
-    z_vals_shifted = z_vals - z_defect
+    pbe_chg_data, pbe_c_length = parse_parchg(args.pbe, verbose=args.verbose)
+    pbe_psi2_z = np.mean(np.mean(pbe_chg_data, axis=0), axis=0)
+    pbe_nz = pbe_chg_data.shape[2]
+    pbe_z_vals = np.linspace(0, pbe_c_length, pbe_nz)
+    z_defect = frac_z_defect * pbe_c_length
+    pbe_z_vals_shifted = pbe_z_vals - z_defect
+    pbe_dz = pbe_z_vals[1] - pbe_z_vals[0]
+    pbe_psi2_z /= np.sum(np.abs(pbe_psi2_z) * pbe_dz)
+
+
+    hse_chg_data, hse_c_length = parse_parchg(args.hse, verbose=args.verbose)
+    hse_psi2_z = np.mean(np.mean(hse_chg_data, axis=0), axis=0)
+    hse_nz = hse_chg_data.shape[2]
+    hse_z_vals = np.linspace(0, hse_c_length, hse_nz)
+    z_defect = frac_z_defect * hse_c_length
+    hse_z_vals_shifted = hse_z_vals - z_defect
+    hse_dz = hse_z_vals[1] - hse_z_vals[0]
+    hse_psi2_z /= np.sum(np.abs(hse_psi2_z) * hse_dz)
 
     if args.verbose:
         print(f"Shifting z-axis to align defect at z = 0.0 Å (z_defect = {z_defect:.4f} Å)")
 
     plt.figure(figsize=(4, 6))
-    plt.plot(psi2_z, z_vals_shifted)
+    plt.plot(pbe_psi2_z, pbe_z_vals_shifted, label='PBE')
+    plt.plot(hse_psi2_z, hse_z_vals_shifted, label='HSE')
     plt.xlabel(r'$\psi^2$')
     plt.ylabel('z (Å)')
     plt.axvline(0, color='gray', linestyle='--', linewidth=1)
     plt.grid(True)
     plt.tight_layout()
+    plt.legend()
     plt.savefig(args.output, dpi=300)
     if args.verbose:
         print("Plot saved as: psi2_plot.png")
