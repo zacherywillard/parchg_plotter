@@ -94,20 +94,38 @@ def main():
     hse_dz = hse_z_vals[1] - hse_z_vals[0]
     hse_psi2_z /= np.sum(np.abs(hse_psi2_z) * hse_dz)
 
-    psi2_z = psi2_z / np.max(psi2_z)  # Normalize psi^2 values to [0, 1]
+    
 
     if args.verbose:
         print(f"Shifting z-axis to align defect at z = 0.0 Å (z_defect = {z_defect:.4f} Å)")
 
     plt.figure(figsize=(4, 6))
-    plt.plot(pbe_psi2_z, pbe_z_vals_shifted, label='PBE')
-    plt.plot(hse_psi2_z, hse_z_vals_shifted, label='HSE')
-    plt.xlabel(r'$\psi^2$')
-    plt.ylabel('z (Å)')
+    plt.plot(np.abs(pbe_psi2_z), pbe_z_vals_shifted, label='PBE')
+    plt.plot(hse_psi2_z, hse_z_vals_shifted, color='red', label='HSE')
+    
+    ax = plt.gca()
+    ax.xaxis.set_label_position('top')
+    ax.xaxis.tick_top()
+    ax.set_xticks([])           # Remove tick marks
+    ax.set_xticklabels([])      # Remove tick labels
+    
+    font = {
+    'family': 'Times New Roman',
+    'weight': 'bold',
+    'fontsize': 16
+    }
+
+    plt.xlabel(r'|Ψ|²', labelpad=10,fontdict=font)
+    plt.ylabel(r'z (Å)', rotation=0, labelpad=20, va='center',fontdict=font)
+
     plt.axvline(0, color='gray', linestyle='--', linewidth=1)
-    plt.grid(True)
+    
     plt.tight_layout()
     plt.legend()
+    
+    plt.autoscale()
+    plt.margins(x=0.01,y=0)
+    
     plt.savefig(args.output, dpi=300)
     if args.verbose:
         print("Plot saved as: psi2_plot.png")
